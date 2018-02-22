@@ -27,9 +27,12 @@ llvm::raw_fd_ostream *klee_open_output_file(std::string &path,
     error = ec.message();
 #elif LLVM_VERSION_CODE >= LLVM_VERSION(3, 5)
   f = new llvm::raw_fd_ostream(path.c_str(), error, llvm::sys::fs::F_None);
-#else
+#elif LLVM_VERSION_CODE >= LLVM_VERSION(3, 4)
   f = new llvm::raw_fd_ostream(path.c_str(), error, llvm::sys::fs::F_Binary);
+#else
+  f = new llvm::raw_fd_ostream(path.c_str(), error, llvm::raw_fd_ostream::F_Binary);
 #endif
+  
   if (!error.empty()) {
     delete f;
     f = NULL;

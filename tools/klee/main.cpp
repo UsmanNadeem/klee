@@ -570,7 +570,11 @@ std::string KleeHandler::getRunTimeLibraryPath(const char *argv0) {
   // C++ standard)
   void *MainExecAddr = (void *)(intptr_t)getRunTimeLibraryPath;
   SmallString<128> toolRoot(
-      llvm::sys::fs::getMainExecutable(argv0, MainExecAddr)
+      #if LLVM_VERSION_CODE >= LLVM_VERSION(3,4)
+        llvm::sys::fs::getMainExecutable(argv0, MainExecAddr)
+      #else
+        llvm::sys::Path::GetMainExecutable(argv0, MainExecAddr).str()
+      #endif
       );
 
   // Strip off executable so we have a directory path

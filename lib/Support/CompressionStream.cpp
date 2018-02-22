@@ -28,6 +28,8 @@ compressed_fd_ostream::compressed_fd_ostream(const char *Filename,
     : llvm::raw_ostream(), pos(0) {
   ErrorInfo = "";
   // Open file in binary mode
+#if LLVM_VERSION_CODE > LLVM_VERSION(3, 3)
+
 #if LLVM_VERSION_CODE >= LLVM_VERSION(3, 5)
   std::error_code EC =
       llvm::sys::fs::openFileForWrite(Filename, FD, llvm::sys::fs::F_None);
@@ -39,6 +41,14 @@ compressed_fd_ostream::compressed_fd_ostream(const char *Filename,
     ErrorInfo = EC.message();
     FD = -1;
   }
+
+#else
+  FD = ::open(Filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+  if (FD < 0) {
+    ErrorInfo = "Could not open file.";
+    FD = -1;
+  }
+#endif
   // Initialize the compression library
   strm.zalloc = 0;
   strm.zfree = 0;
